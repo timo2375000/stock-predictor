@@ -1,0 +1,6 @@
+주가 예측분석기에 들어가는 순서
+윈도우+ X키를 누르고 터미널 관리자클릭
+
+cd Desktop\stock-predictor 엔터
+
+python app.py 엔터

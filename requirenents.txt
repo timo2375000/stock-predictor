@@ -1,0 +1,6 @@
+flask
+finance-datareader
+pandas
+numpy
+flask-cors
+python-dotenv
