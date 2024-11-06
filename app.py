@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 import FinanceDataReader as fdr
 import numpy as np
@@ -6,12 +6,20 @@ from datetime import datetime, timedelta
 import traceback
 import os
 
-app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*"}})
+app = Flask(__name__, static_folder='public')
+CORS(app, resources={
+    r"/*": {
+        "origins": ["https://stock-predictor-weld.vercel.app", 
+                   "http://localhost:3000"],
+        "methods": ["OPTIONS", "GET", "POST"],
+        "allow_headers": ["Content-Type"]
+    }
+})
 
-@app.route('/', methods=['GET'])
-def home():
-    return "Stock Predictor API is running!"
+# Static files
+@app.route('/')
+def serve():
+    return send_file('public/index.html')
 
 def get_stock_code(query):
     """종목명 또는 종목코드로 종목코드를 찾는 함수"""
