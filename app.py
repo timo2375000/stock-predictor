@@ -19,7 +19,7 @@ CORS(app, resources={
 # Static files
 @app.route('/')
 def serve():
-    return send_file('public/index.html')
+    return "Stock Predictor API is running!"
 
 def get_stock_code(query):
     """종목명 또는 종목코드로 종목코드를 찾는 함수"""
@@ -64,8 +64,11 @@ def calculate_predicted_price(current_price, trend, volatility):
     
     return predicted_price, confidence, change_rate
 
-@app.route('/api/predict', methods=['POST'])
+@app.route('/api/predict', methods=['POST', 'OPTIONS'])
 def predict_stock():
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+        
     try:
         query = request.json.get('stockCode')
         print(f"Received query: {query}")
@@ -145,4 +148,5 @@ def predict_stock():
         return jsonify({'error': error_msg}), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 3000)))
+    port = int(os.environ.get('PORT', 3000))
+    app.run(host='0.0.0.0', port=port)
