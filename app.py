@@ -4,9 +4,14 @@ import FinanceDataReader as fdr
 import numpy as np
 from datetime import datetime, timedelta
 import traceback
+import os
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}})
+
+@app.route('/', methods=['GET'])
+def home():
+    return "Stock Predictor API is running!"
 
 def get_stock_code(query):
     """종목명 또는 종목코드로 종목코드를 찾는 함수"""
@@ -132,4 +137,4 @@ def predict_stock():
         return jsonify({'error': error_msg}), 500
 
 if __name__ == '__main__':
-    app.run(port=3000, debug=True)
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 3000)))
