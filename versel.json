@@ -1,21 +1,25 @@
 {
-    "version": 2,
-    "builds": [
-        {
-            "src": "app.py",
-            "use": "@vercel/python"
-        }
-    ],
-    "routes": [
-        {
-            "src": "/(.*)",
-            "dest": "app.py",
-            "methods": ["GET", "POST", "OPTIONS"],
-            "headers": {
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept",
-                "Access-Control-Allow-Methods": "GET, POST, OPTIONS"
-            }
-        }
-    ]
+  "version": 2,
+  "builds": [
+    {
+      "src": "app.py",
+      "use": "@vercel/python",
+      "config": { "maxLambdaSize": "15mb" }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "app.py",
+      "methods": ["GET", "POST", "OPTIONS"],
+      "headers": {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+        "Access-Control-Allow-Headers": "*"
+      }
+    }
+  ],
+  "env": {
+    "PYTHONPATH": "."
+  }
 }
