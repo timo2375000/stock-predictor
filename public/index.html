@@ -3,16 +3,14 @@
 <head>
     <title>주식 가격 예측기</title>
     <meta charset="UTF-8">
-    <!-- Chart.js 핵심 라이브러리 -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
-    <!-- 캔들스틱 차트를 위한 financial 플러그인 -->
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial@0.1.1/dist/chartjs-chart-financial.min.js"></script>
-    <!-- 날짜 처리를 위한 adapter -->
-    <script src="https://cdn.jsdelivr.net/npm/luxon@3.0.1/build/global/luxon.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.2.0/dist/chartjs-adapter-luxon.min.js"></script>
-    <!-- 추가 플러그인들 -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+    <!-- Chart.js 및 필요한 플러그인들 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment"></script>
+    <!-- 캔들스틱 차트를 위한 추가 플러그인 -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial/dist/chartjs-chart-financial.min.js"></script>
+    <!-- 한국어 날짜 표시를 위한 locale -->
+    <script src="https://cdn.jsdelivr.net/npm/moment/locale/ko.js"></script>
     <style>
         body { 
             font-family: 'Noto Sans KR', sans-serif; 
@@ -175,7 +173,7 @@
         </div>
     </div>
 
-<script>
+    <script>
         let chart = null;
 
         document.getElementById('stockCode').addEventListener('keypress', function(e) {
@@ -195,10 +193,13 @@
             hideError();
 
             try {
-                const response = await fetch('http://127.0.0.1:3000/api/predict', {
+                const baseUrl = 'https://stock-predictor-weld.vercel.app';
+                const response = await fetch(`${baseUrl}/api/predict`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'Origin': window.location.origin
                     },
                     body: JSON.stringify({ stockCode: stockCodeInput })
                 });
@@ -243,106 +244,137 @@
             }
         }
 
-function updateChart(data) {
-    if (chart) {
-        chart.destroy();
-    }
-
-    const historicalData = data.historicalData.map(item => ({
-        x: new Date(item.date).valueOf(), // 타임스탬프로 변환
-        o: item.open,
-        h: item.high,
-        l: item.low,
-        c: item.close
-    }));
-
-    // 예측 데이터 추가
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    historicalData.push({
-        x: tomorrow.valueOf(), // 타임스탬프로 변환
-        o: data.currentPrice,
-        h: Math.max(data.currentPrice, data.predictedPrice),
-        l: Math.min(data.currentPrice, data.predictedPrice),
-        c: data.predictedPrice
-    });
-
-    const ctx = document.getElementById('priceChart').getContext('2d');
-    
-    chart = new Chart(ctx, {
-        type: 'candlestick',
-        data: {
-            datasets: [{
-                label: data.stockName,
-                data: historicalData,
-                color: {
-                    up: '#FF0000',
-                    down: '#0000FF',
-                }
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    mode: 'index',
-                    intersect: false,
-                    callbacks: {
-                        label: function(context) {
-                            const d = context.raw;
-                            return [
-                                `시가: ${d.o?.toLocaleString()}원`,
-                                `고가: ${d.h?.toLocaleString()}원`,
-                                `저가: ${d.l?.toLocaleString()}원`,
-                                `종가: ${d.c?.toLocaleString()}원`
-                            ];
-                        }
-                    }
-                },
-                zoom: {
-                    zoom: {
-                        wheel: {
-                            enabled: true,
-                        },
-                        pinch: {
-                            enabled: true
-                        },
-                        mode: 'x',
-                    },
-                    pan: {
-                        enabled: true,
-                        mode: 'x',
-                    }
-                }
-            },
-            scales: {
-                x: {
-                    type: 'time',
-                    time: {
-                        unit: 'day',
-                    },
-                    adapters: {
-                        date: {
-                            locale: 'ko'
-                        }
-                    }
-                },
-                y: {
-                    position: 'right',
-                    ticks: {
-                        callback: function(value) {
-                            return value.toLocaleString() + '원';
-                        }
-                    }
-                }
+        function updateChart(data) {
+            if (chart) {
+                chart.destroy();
             }
+
+            // 과거 데이터 포맷팅
+            const historicalData = data.historicalData.map(item => ({
+                x: new Date(item.date).valueOf(),
+                o: item.open,
+                h: item.high,
+                l: item.low,
+                c: item.close
+            }));
+
+            // 예측 데이터 추가
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            historicalData.push({
+                x: tomorrow.valueOf(),
+                o: data.currentPrice,
+                h: Math.max(data.currentPrice, data.predictedPrice),
+                l: Math.min(data.currentPrice, data.predictedPrice),
+                c: data.predictedPrice
+            });
+
+            const ctx = document.getElementById('priceChart').getContext('2d');
+
+            // 캔들스틱 색상 설정
+            const candleStickColors = {
+                up: {
+                    border: '#FF0000',
+                    fill: '#FF0000'
+                },
+                down: {
+                    border: '#0000FF',
+                    fill: '#0000FF'
+                }
+            };
+
+            chart = new Chart(ctx, {
+                type: 'candlestick',
+                data: {
+                    datasets: [{
+                        label: data.stockName,
+                        data: historicalData,
+                        color: {
+                            up: candleStickColors.up.border,
+                            down: candleStickColors.down.border,
+                        },
+                        borderColor: function(ctx) {
+                            return ctx.raw.c > ctx.raw.o ? 
+                                candleStickColors.up.border : 
+                                candleStickColors.down.border;
+                        },
+                        backgroundColor: function(ctx) {
+                            return ctx.raw.c > ctx.raw.o ? 
+                                candleStickColors.up.fill : 
+                                candleStickColors.down.fill;
+                        }
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: `${data.stockName} 주가 차트`,
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            },
+                            padding: 20
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    const point = context.raw;
+                                    return [
+                                        `날짜: ${new Date(point.x).toLocaleDateString()}`,
+                                        `시가: ${point.o.toLocaleString()}원`,
+                                        `고가: ${point.h.toLocaleString()}원`,
+                                        `저가: ${point.l.toLocaleString()}원`,
+                                        `종가: ${point.c.toLocaleString()}원`
+                                    ];
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'day',
+                                tooltipFormat: 'MM/DD',
+                                displayFormats: {
+                                    day: 'MM/DD'
+                                }
+                            },
+                            grid: {
+                                display: true,
+                                drawBorder: true,
+                            },
+                            ticks: {
+                                source: 'auto',
+                                maxRotation: 0,
+                                autoSkip: true,
+                                maxTicksLimit: 10
+                            }
+                        },
+                        y: {
+                            position: 'right',
+                            grid: {
+                                display: true,
+                                drawBorder: true,
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toLocaleString() + '원';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
         }
-    });
-}
 
         function showError(message) {
             const errorDiv = document.getElementById('errorMessage');
