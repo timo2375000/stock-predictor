@@ -15,6 +15,11 @@ CORS(app, resources={
     }
 })
 
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def catch_all(path):
+    return f"Hello from path: {path}"
+
 @app.route('/api/predict', methods=['POST', 'OPTIONS'])
 def predict_stock():
     if request.method == 'OPTIONS':
