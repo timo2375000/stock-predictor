@@ -4,21 +4,22 @@
         {
             "src": "app.py",
             "use": "@vercel/python"
-        },
-        {
-            "src": "public/**",
-            "use": "@vercel/static"
         }
     ],
     "routes": [
         {
             "src": "/api/predict",
             "dest": "app.py",
-            "methods": ["GET", "POST", "OPTIONS"]
+            "methods": ["GET", "POST", "OPTIONS"],
+            "headers": {
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Headers": "Content-Type, Authorization",
+                "Access-Control-Allow-Methods": "GET, POST, OPTIONS"
+            }
         },
         {
             "src": "/(.*)",
-            "dest": "public/$1"
+            "dest": "app.py"
         }
     ],
     "env": {

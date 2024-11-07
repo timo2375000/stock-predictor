@@ -7,10 +7,23 @@ import traceback
 import os
 
 app = Flask(__name__)
-CORS(app)  # CORS 설정 추가
+CORS(app, resources={
+    r"/*": {
+        "origins": "*",
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"]
+    }
+})
 
-@app.route('/api/predict', methods=['POST'])
+@app.route('/api/predict', methods=['POST', 'OPTIONS'])
 def predict_stock():
+    if request.method == 'OPTIONS':
+        response = jsonify({'status': 'OK'})
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+        response.headers.add('Access-Control-Allow-Methods', 'POST,OPTIONS')
+        return response
+
     try:
         data = request.get_json()
         query = data.get('stockCode')
@@ -81,6 +94,7 @@ def predict_stock():
             ]
         }
         
+        print(f"Returning result: {result}")
         return jsonify(result)
 
     except Exception as e:
@@ -89,4 +103,5 @@ def predict_stock():
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, port=3000)
+    port = int(os.environ.get('PORT', 3000))
+    app.run(host='0.0.0.0', port=port)
