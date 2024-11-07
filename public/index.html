@@ -182,45 +182,48 @@
             }
         });
 
-        async function predictStock() {
-            const stockCodeInput = document.getElementById('stockCode').value;
-            if (!stockCodeInput) {
-                showError('종목 코드나 이름을 입력해주세요');
-                return;
-            }
+async function predictStock() {
+    const stockCodeInput = document.getElementById('stockCode').value;
+    if (!stockCodeInput) {
+        showError('종목 코드나 이름을 입력해주세요');
+        return;
+    }
 
-            showLoading(true);
-            hideError();
+    showLoading(true);
+    hideError();
 
-            try {
-                const baseUrl = 'https://stock-predictor-weld.vercel.app';
-                const response = await fetch(`${baseUrl}/api/predict`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'Origin': window.location.origin
-                    },
-                    body: JSON.stringify({ stockCode: stockCodeInput })
-                });
-                
-                if (!response.ok) {
-                    throw new Error('서버 응답 오류');
-                }
-                
-                const data = await response.json();
-                if (data.error) {
-                    throw new Error(data.error);
-                }
-                
-                updateUI(data);
-            } catch (error) {
-                console.error('Error:', error);
-                showError('예측 중 오류가 발생했습니다: ' + error.message);
-            } finally {
-                showLoading(false);
-            }
+    try {
+        const response = await fetch('/api/predict', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ stockCode: stockCodeInput })
+        });
+
+        console.log('Response status:', response.status); // 디버깅용
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || '서버 응답 오류');
         }
+
+        const data = await response.json();
+        console.log('Response data:', data); // 디버깅용
+
+        if (data.error) {
+            throw new Error(data.error);
+        }
+
+        updateUI(data);
+    } catch (error) {
+        console.error('Error details:', error); // 디버깅용
+        showError('예측 중 오류가 발생했습니다: ' + error.message);
+    } finally {
+        showLoading(false);
+    }
+}
 
         function updateUI(data) {
             try {

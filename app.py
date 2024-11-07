@@ -9,13 +9,11 @@ import os
 app = Flask(__name__, static_folder='public')
 CORS(app, resources={
     r"/*": {
-        "origins": ["https://stock-predictor-weld.vercel.app", 
-                   "http://localhost:3000"],
-        "methods": ["OPTIONS", "GET", "POST"],
-        "allow_headers": ["Content-Type"]
+        "origins": "*",
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization", "Accept"]
     }
 })
-
 # Static files
 @app.route('/')
 def serve():
