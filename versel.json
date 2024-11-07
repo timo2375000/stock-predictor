@@ -1,25 +1,27 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "app.py",
-      "use": "@vercel/python",
-      "config": { "maxLambdaSize": "15mb" }
+    "version": 2,
+    "builds": [
+        {
+            "src": "app.py",
+            "use": "@vercel/python"
+        },
+        {
+            "src": "public/**",
+            "use": "@vercel/static"
+        }
+    ],
+    "routes": [
+        {
+            "src": "/api/predict",
+            "dest": "app.py",
+            "methods": ["GET", "POST", "OPTIONS"]
+        },
+        {
+            "src": "/(.*)",
+            "dest": "public/$1"
+        }
+    ],
+    "env": {
+        "PYTHONPATH": "."
     }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "app.py",
-      "methods": ["GET", "POST", "OPTIONS"],
-      "headers": {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-        "Access-Control-Allow-Headers": "*"
-      }
-    }
-  ],
-  "env": {
-    "PYTHONPATH": "."
-  }
 }

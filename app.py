@@ -64,8 +64,13 @@ def calculate_predicted_price(current_price, trend, volatility):
 
 @app.route('/api/predict', methods=['POST', 'OPTIONS'])
 def predict_stock():
+    # CORS preflight request
     if request.method == 'OPTIONS':
-        return jsonify({}), 200
+        response = make_response()
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+        response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+        return response
         
     try:
         query = request.json.get('stockCode')
