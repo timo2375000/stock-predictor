@@ -182,49 +182,50 @@
            }
        });
 
-       async function predictStock() {
-           const stockCodeInput = document.getElementById('stockCode').value;
-           if (!stockCodeInput) {
-               showError('종목 코드나 이름을 입력해주세요');
-               return;
-           }
+async function predictStock() {
+    const stockCodeInput = document.getElementById('stockCode').value;
+    if (!stockCodeInput) {
+        showError('종목 코드나 이름을 입력해주세요');
+        return;
+    }
 
-           showLoading(true);
-           hideError();
+    showLoading(true);
+    hideError();
 
-           try {
-               const response = await fetch('https://stock-predictor-weld.vercel.app/api/predict', {
-                   method: 'POST',
-                   headers: {
-                       'Content-Type': 'application/json',
-                       'Accept': 'application/json'
-                   },
-                   body: JSON.stringify({ stockCode: stockCodeInput })
-               });
+    try {
+        // URL을 로컬 서버 주소로 변경
+       const response = await fetch('https://stock-predictor-weld.vercel.app/api/predict', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ stockCode: stockCodeInput })
+        });
 
-               console.log('Response status:', response.status);
-               const responseData = await response.text();
-               console.log('Raw response:', responseData);
+        console.log('Response status:', response.status);
+        const responseData = await response.text();
+        console.log('Raw response:', responseData);
 
-               if (!response.ok) {
-                   throw new Error(`서버 응답 오류: ${response.status} ${responseData}`);
-               }
+        if (!response.ok) {
+            throw new Error(`서버 응답 오류: ${response.status} ${responseData}`);
+        }
 
-               const data = JSON.parse(responseData);
-               console.log('Parsed data:', data);
+        const data = JSON.parse(responseData);
+        console.log('Parsed data:', data);
 
-               if (data.error) {
-                   throw new Error(data.error);
-               }
+        if (data.error) {
+            throw new Error(data.error);
+        }
 
-               updateUI(data);
-           } catch (error) {
-               console.error('Error:', error);
-               showError('예측 중 오류가 발생했습니다: ' + error.message);
-           } finally {
-               showLoading(false);
-           }
-       }
+        updateUI(data);
+    } catch (error) {
+        console.error('Error:', error);
+        showError('예측 중 오류가 발생했습니다: ' + error.message);
+    } finally {
+        showLoading(false);
+    }
+}
 
        function updateUI(data) {
            try {
