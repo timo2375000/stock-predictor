@@ -15,8 +15,13 @@ def home():
 
 @app.route('/api/predict', methods=['POST', 'OPTIONS'])
 def predict_stock():
+    print("Received request at /api/predict")  # 로깅 추가
+    print("Request method:", request.method)   # 메소드 확인
+    print("Request headers:", dict(request.headers))  # 헤더 확인
+
     # CORS preflight request
     if request.method == 'OPTIONS':
+        print("Handling OPTIONS request")  # 로깅 추가
         response = jsonify({'status': 'OK'})
         response.headers.add('Access-Control-Allow-Origin', '*')
         response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
@@ -24,9 +29,10 @@ def predict_stock():
         return response
 
     try:
+        print("Request body:", request.get_json())  # 요청 데이터 확인
         data = request.get_json()
         query = data.get('stockCode')
-        print(f"Received query: {query}")
+        print(f"Processing query: {query}")  # 로깅 추가
 
         # 종목코드 찾기
         stock_code = query
