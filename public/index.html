@@ -193,31 +193,29 @@ async function predictStock() {
     hideError();
 
     try {
-        // URL을 로컬 서버 주소로 변경
-       const response = await fetch('https://stock-predictor-weld.vercel.app/api/predict', {
+        const response = await fetch('https://stock-predictor-weld.vercel.app/api/predict', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Accept': 'application/json'
+                'Accept': 'application/json',
+                'Access-Control-Allow-Origin': '*'
             },
+            mode: 'cors',  // CORS 모드 추가
+            credentials: 'same-origin',  // 자격 증명 설정
             body: JSON.stringify({ stockCode: stockCodeInput })
         });
 
         console.log('Response status:', response.status);
-        const responseData = await response.text();
-        console.log('Raw response:', responseData);
-
+        
         if (!response.ok) {
-            throw new Error(`서버 응답 오류: ${response.status} ${responseData}`);
+            throw new Error('서버 응답 오류');
         }
-
-        const data = JSON.parse(responseData);
-        console.log('Parsed data:', data);
-
+        
+        const data = await response.json();
         if (data.error) {
             throw new Error(data.error);
         }
-
+        
         updateUI(data);
     } catch (error) {
         console.error('Error:', error);
