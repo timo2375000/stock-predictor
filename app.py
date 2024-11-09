@@ -7,26 +7,20 @@ import traceback
 import os
 
 app = Flask(__name__)
-CORS(app, resources={
-    r"/*": {
-        "origins": "*",
-        "methods": ["GET", "POST", "OPTIONS"],
-        "allow_headers": ["Content-Type", "Authorization"]
-    }
-})
+CORS(app)
 
-@app.route('/', defaults={'path': ''})
-@app.route('/<path:path>')
-def catch_all(path):
-    return f"Hello from path: {path}"
+@app.route('/')
+def home():
+    return "Stock Predictor API is running!"
 
 @app.route('/api/predict', methods=['POST', 'OPTIONS'])
 def predict_stock():
+    # CORS preflight request
     if request.method == 'OPTIONS':
         response = jsonify({'status': 'OK'})
         response.headers.add('Access-Control-Allow-Origin', '*')
-        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-        response.headers.add('Access-Control-Allow-Methods', 'POST,OPTIONS')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
+        response.headers.add('Access-Control-Allow-Methods', 'POST')
         return response
 
     try:
@@ -99,8 +93,9 @@ def predict_stock():
             ]
         }
         
-        print(f"Returning result: {result}")
-        return jsonify(result)
+        response = jsonify(result)
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        return response
 
     except Exception as e:
         print(f"Error: {str(e)}")

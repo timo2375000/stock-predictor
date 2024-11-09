@@ -8,13 +8,14 @@
     ],
     "routes": [
         {
-            "src": "/api/predict",
-            "dest": "app.py",
-            "methods": ["POST", "OPTIONS"]
-        },
-        {
             "src": "/(.*)",
-            "dest": "app.py"
+            "dest": "app.py",
+            "methods": ["GET", "POST", "OPTIONS"],
+            "headers": {
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+                "Access-Control-Allow-Headers": "Content-Type"
+            }
         }
     ],
     "env": {
